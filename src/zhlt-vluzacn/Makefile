@@ -214,7 +214,23 @@ RIPENT_DEFINITIONS = \
 			RIPENT \
 
 #
-# Build commands
+# Commands
+#
+
+CC  := gcc
+CXX := g++
+
+COPY_FILE := cp
+RM_FILE   := rm
+MAKE_DIR  := mkdir -p
+COPY_DIR  := cp -r
+RM_DIR    := rm -rf
+
+PRINT_HEAD := head
+
+
+#
+# Build rules
 #
 
 .PHONY : all
@@ -243,67 +259,67 @@ ripent : bin/ripent printusage
 
 bin/hlcsg : $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o) printusage
 	@echo ======== hlcsg : linking ========
-	mkdir -p hlcsg/release/bin
-	g++ $(COMMON_FLAGS) -o hlcsg/release/bin/hlcsg $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o)
-	mkdir -p bin
-	cp hlcsg/release/bin/hlcsg bin/hlcsg
+	$(MAKE_DIR) hlcsg/release/bin
+	$(CXX) $(COMMON_FLAGS) -o hlcsg/release/bin/hlcsg $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o)
+	$(MAKE_DIR) bin
+	$(COPY_FILE) hlcsg/release/bin/hlcsg bin/hlcsg
 
 $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o) : hlcsg/release/%.o : %.cpp $(HLCSG_INCLUDEFILES) printusage
 	@echo ======== hlcsg : compiling $< ========
-	mkdir -p $(dir $@)
-	g++ -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $<
+	$(MAKE_DIR) $(dir $@)
+	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $<
 
 bin/hlbsp : $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o) printusage
 	@echo ======== hlbsp : linking ========
-	mkdir -p hlbsp/release/bin
-	g++ $(COMMON_FLAGS) -o hlbsp/release/bin/hlbsp $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o)
-	mkdir -p bin
-	cp hlbsp/release/bin/hlbsp bin/hlbsp
+	$(MAKE_DIR) hlbsp/release/bin
+	$(CXX) $(COMMON_FLAGS) -o hlbsp/release/bin/hlbsp $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o)
+	$(MAKE_DIR) bin
+	$(COPY_FILE) hlbsp/release/bin/hlbsp bin/hlbsp
 
 $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o) : hlbsp/release/%.o : %.cpp $(HLBSP_INCLUDEFILES) printusage
 	@echo ======== hlbsp : compiling $< ========
 	mkdir -p $(dir $@)
-	g++ -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $<
+	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $<
 
 bin/hlvis : $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o) printusage
 	@echo ======== hlvis : linking ========
-	mkdir -p hlvis/release/bin
-	g++ $(COMMON_FLAGS) -o hlvis/release/bin/hlvis $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o)
-	mkdir -p bin
-	cp hlvis/release/bin/hlvis bin/hlvis
+	$(MAKE_DIR) hlvis/release/bin
+	$(CXX) $(COMMON_FLAGS) -o hlvis/release/bin/hlvis $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o)
+	$(MAKE_DIR) bin
+	$(COPY_FILE) hlvis/release/bin/hlvis bin/hlvis
 
 $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o) : hlvis/release/%.o : %.cpp $(HLVIS_INCLUDEFILES) printusage
 	@echo ======== hlvis : compiling $< ========
-	mkdir -p $(dir $@)
-	g++ -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $<
+	$(MAKE_DIR) $(dir $@)
+	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $<
 
 bin/hlrad : $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o) printusage
 	@echo ======== hlrad : linking ========
-	mkdir -p hlrad/release/bin
-	g++ $(COMMON_FLAGS) -o hlrad/release/bin/hlrad $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o)
-	mkdir -p bin
-	cp hlrad/release/bin/hlrad bin/hlrad
+	$(MAKE_DIR) hlrad/release/bin
+	$(CXX) $(COMMON_FLAGS) -o hlrad/release/bin/hlrad $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o)
+	$(MAKE_DIR) bin
+	$(COPY_FILE) hlrad/release/bin/hlrad bin/hlrad
 
 $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o) : hlrad/release/%.o : %.cpp $(HLRAD_INCLUDEFILES) printusage
 	@echo ======== hlrad : compiling $< ========
-	mkdir -p $(dir $@)
-	g++ -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $<
+	$(MAKE_DIR) $(dir $@)
+	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $<
 
 bin/ripent : $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o) printusage
 	@echo ======== ripent : linking ========
-	mkdir -p ripent/release/bin
-	g++ $(COMMON_FLAGS) -o ripent/release/bin/ripent $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o)
-	mkdir -p bin
-	cp ripent/release/bin/ripent bin/ripent
+	$(MAKE_DIR) ripent/release/bin
+	$(CXX) $(COMMON_FLAGS) -o ripent/release/bin/ripent $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o)
+	$(MAKE_DIR) bin
+	$(COPY_FILE) ripent/release/bin/ripent bin/ripent
 
 $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o) : ripent/release/%.o : %.cpp $(RIPENT_INCLUDEFILES) printusage
 	@echo ======== ripent : compiling $< ========
-	mkdir -p $(dir $@)
-	g++ -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $<
+	$(MAKE_DIR) $(dir $@)
+	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $<
 
 .PHONY : printusage
 printusage :
-	head -n 35 Makefile
+	$(PRINT_HEAD) -n 35 Makefile
 
 #
 # Clean
@@ -311,12 +327,12 @@ printusage :
 
 .PHONY : clean
 clean : printusage
-	rm -rf hlcsg/release
-	rm -rf hlbsp/release
-	rm -rf hlvis/release
-	rm -rf hlrad/release
-	rm -rf ripent/release
-	rm -rf bin
+	-$(RM_DIR) hlcsg/release
+	-$(RM_DIR) hlbsp/release
+	-$(RM_DIR) hlvis/release
+	-$(RM_DIR) hlrad/release
+	-$(RM_DIR) ripent/release
+	-$(RM_DIR) bin
 	@echo ======== OK ========
 
 
