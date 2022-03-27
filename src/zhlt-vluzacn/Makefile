@@ -1,6 +1,6 @@
 
 #
-# Makefile for Linux GNU compiler
+# Makefile for UNIX-like environments
 #
 # Usage:
 #   make            - Build all tools. They will be copied into 'bin' directory.
@@ -10,6 +10,14 @@
 #   make hlvis      - Build hlvis.
 #   make hlrad      - Build hlrad.
 #   make ripent     - Build ripent.
+#   make TARGET=foo - Build for a cross compilation target.
+#   make universal  - Build universal (arm64 + x64) binaries on macOS hosts.
+#
+# Available cross-compilation targets: 
+#   linux_x64    (Build for Linux x64 on Linux hosts).
+#   linux_x86    (Build for Linux x86 on Linux hosts).
+#   applesilicon (Build for ARM64 Apple Silicon macOS 11 on macOS hosts).
+#   intelmac     (Build for x64 Intel macOS 11 on macOS hosts).
 #
 # Before running the tools, please make sure the default maximum stack size on your computer
 #   is more than 4MB.
@@ -28,10 +36,6 @@
 #     warning: unused variable ‘???’
 #     warning: converting to ‘int’ from ‘vec_t’
 #
-
-
-
-
 
 
 
@@ -225,101 +229,164 @@ RM_FILE   := rm
 MAKE_DIR  := mkdir -p
 COPY_DIR  := cp -r
 RM_DIR    := rm -rf
+MAKE      := make
 
-PRINT_HEAD := head
+CREATE_UNIVERSAL := lipo -create
+PRINT_HEAD := head -n 40
 
+#
+# Platform options
+#
+
+HLBSP_EXE  := hlbsp
+HLCSG_EXE  := hlcsg
+HLVIS_EXE  := hlvis
+HLRAD_EXE  := hlrad
+RIPENT_EXE := ripent
+
+TARGET :=
+PLATFORM_CFLAGS :=
+PLATFORM_LFLAGS :=
+
+ifeq ($(TARGET),linux_x64)
+	PLATFORM_CFLAGS += -m64
+	PLATFORM_LFLAGS += -m64
+	HLBSP_EXE  := $(addsuffix _x64,$(HLBSP_EXE))
+	HLCSG_EXE  := $(addsuffix _x64,$(HLCSG_EXE))
+	HLVIS_EXE  := $(addsuffix _x64,$(HLVIS_EXE))
+	HLRAD_EXE  := $(addsuffix _x64,$(HLRAD_EXE))
+	RIPENT_EXE := $(addsuffix _x64,$(RIPENT_EXE))
+else ifeq ($(TARGET),linux_x86)
+	PLATFORM_CFLAGS += -m32
+	PLATFORM_LFLAGS += -m32
+	HLBSP_EXE  := $(addsuffix _x86,$(HLBSP_EXE))
+	HLCSG_EXE  := $(addsuffix _x86,$(HLCSG_EXE))
+	HLVIS_EXE  := $(addsuffix _x86,$(HLVIS_EXE))
+	HLRAD_EXE  := $(addsuffix _x86,$(HLRAD_EXE))
+	RIPENT_EXE := $(addsuffix _x86,$(RIPENT_EXE))
+else ifeq ($(TARGET),applesilicon)
+	PLATFORM_CFLAGS += -target arm64-apple-macos11
+	PLATFORM_LFLAGS += -target arm64-apple-macos11
+	HLBSP_EXE  := $(addsuffix _arm64,$(HLBSP_EXE))
+	HLCSG_EXE  := $(addsuffix _arm64,$(HLCSG_EXE))
+	HLVIS_EXE  := $(addsuffix _arm64,$(HLVIS_EXE))
+	HLRAD_EXE  := $(addsuffix _arm64,$(HLRAD_EXE))
+	RIPENT_EXE := $(addsuffix _arm64,$(RIPENT_EXE))
+else ifeq ($(TARGET),intelmac)
+	PLATFORM_CFLAGS += -target x86_64-apple-macos11
+	PLATFORM_LFLAGS += -target x86_64-apple-macos11
+	HLBSP_EXE  := $(addsuffix _x64,$(HLBSP_EXE))
+	HLCSG_EXE  := $(addsuffix _x64,$(HLCSG_EXE))
+	HLVIS_EXE  := $(addsuffix _x64,$(HLVIS_EXE))
+	HLRAD_EXE  := $(addsuffix _x64,$(HLRAD_EXE))
+	RIPENT_EXE := $(addsuffix _x64,$(RIPENT_EXE))
+endif
 
 #
 # Build rules
 #
 
 .PHONY : all
-all : bin/hlcsg bin/hlbsp bin/hlvis bin/hlrad bin/ripent printusage
+all : bin/$(HLCSG_EXE) bin/$(HLBSP_EXE) bin/$(HLVIS_EXE) bin/$(HLRAD_EXE) bin/$(RIPENT_EXE) printusage
 	@echo ======== OK ========
 
 .PHONY : hlcsg
-hlcsg : bin/hlcsg printusage
+hlcsg : bin/$(HLCSG_EXE) printusage
 	@echo ======== OK ========
 
 .PHONY : hlbsp
-hlbsp : bin/hlbsp printusage
+hlbsp : bin/$(HLBSP_EXE) printusage
 	@echo ======== OK ========
 
 .PHONY : hlvis
-hlvis : bin/hlvis printusage
+hlvis : bin/$(HLVIS_EXE) printusage
 	@echo ======== OK ========
 
 .PHONY : hlrad
-hlrad : bin/hlrad printusage
+hlrad : bin/$(HLRAD_EXE) printusage
 	@echo ======== OK ========
 
 .PHONY : ripent
-ripent : bin/ripent printusage
+ripent : bin/$(RIPENT_EXE) printusage
 	@echo ======== OK ========
 
-bin/hlcsg : $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o) printusage
+bin/$(HLCSG_EXE) : $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o) printusage
 	@echo ======== hlcsg : linking ========
 	$(MAKE_DIR) hlcsg/release/bin
-	$(CXX) $(COMMON_FLAGS) -o hlcsg/release/bin/hlcsg $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o)
+	$(CXX) $(COMMON_FLAGS) $(PLATFORM_LFLAGS) -o hlcsg/release/bin/hlcsg $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o)
 	$(MAKE_DIR) bin
-	$(COPY_FILE) hlcsg/release/bin/hlcsg bin/hlcsg
+	$(COPY_FILE) hlcsg/release/bin/hlcsg bin/$(HLCSG_EXE)
 
 $(HLCSG_CPPFILES:%.cpp=hlcsg/release/%.o) : hlcsg/release/%.o : %.cpp $(HLCSG_INCLUDEFILES) printusage
 	@echo ======== hlcsg : compiling $< ========
 	$(MAKE_DIR) $(dir $@)
-	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $<
+	$(CXX) -c $(COMMON_FLAGS) $(PLATFORM_CFLAGS) -o $@ $(addprefix -I,$(HLCSG_INCLUDEDIRS)) $(addprefix -D,$(HLCSG_DEFINITIONS)) $<
 
-bin/hlbsp : $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o) printusage
+bin/$(HLBSP_EXE) : $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o) printusage
 	@echo ======== hlbsp : linking ========
 	$(MAKE_DIR) hlbsp/release/bin
-	$(CXX) $(COMMON_FLAGS) -o hlbsp/release/bin/hlbsp $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o)
+	$(CXX) $(COMMON_FLAGS) $(PLATFORM_LFLAGS) -o hlbsp/release/bin/hlbsp $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o)
 	$(MAKE_DIR) bin
-	$(COPY_FILE) hlbsp/release/bin/hlbsp bin/hlbsp
+	$(COPY_FILE) hlbsp/release/bin/hlbsp bin/$(HLBSP_EXE)
 
 $(HLBSP_CPPFILES:%.cpp=hlbsp/release/%.o) : hlbsp/release/%.o : %.cpp $(HLBSP_INCLUDEFILES) printusage
 	@echo ======== hlbsp : compiling $< ========
 	mkdir -p $(dir $@)
-	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $<
+	$(CXX) -c $(COMMON_FLAGS) $(PLATFORM_CFLAGS) -o $@ $(addprefix -I,$(HLBSP_INCLUDEDIRS)) $(addprefix -D,$(HLBSP_DEFINITIONS)) $<
 
-bin/hlvis : $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o) printusage
+bin/$(HLVIS_EXE) : $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o) printusage
 	@echo ======== hlvis : linking ========
 	$(MAKE_DIR) hlvis/release/bin
-	$(CXX) $(COMMON_FLAGS) -o hlvis/release/bin/hlvis $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o)
+	$(CXX) $(COMMON_FLAGS) $(PLATFORM_LFLAGS) -o hlvis/release/bin/hlvis $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o)
 	$(MAKE_DIR) bin
-	$(COPY_FILE) hlvis/release/bin/hlvis bin/hlvis
+	$(COPY_FILE) hlvis/release/bin/hlvis bin/$(HLVIS_EXE)
 
 $(HLVIS_CPPFILES:%.cpp=hlvis/release/%.o) : hlvis/release/%.o : %.cpp $(HLVIS_INCLUDEFILES) printusage
 	@echo ======== hlvis : compiling $< ========
 	$(MAKE_DIR) $(dir $@)
-	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $<
+	$(CXX) -c $(COMMON_FLAGS) $(PLATFORM_CFLAGS) -o $@ $(addprefix -I,$(HLVIS_INCLUDEDIRS)) $(addprefix -D,$(HLVIS_DEFINITIONS)) $<
 
-bin/hlrad : $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o) printusage
+bin/$(HLRAD_EXE) : $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o) printusage
 	@echo ======== hlrad : linking ========
 	$(MAKE_DIR) hlrad/release/bin
-	$(CXX) $(COMMON_FLAGS) -o hlrad/release/bin/hlrad $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o)
+	$(CXX) $(COMMON_FLAGS) $(PLATFORM_LFLAGS) -o hlrad/release/bin/hlrad $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o)
 	$(MAKE_DIR) bin
-	$(COPY_FILE) hlrad/release/bin/hlrad bin/hlrad
+	$(COPY_FILE) hlrad/release/bin/hlrad bin/$(HLRAD_EXE)
 
 $(HLRAD_CPPFILES:%.cpp=hlrad/release/%.o) : hlrad/release/%.o : %.cpp $(HLRAD_INCLUDEFILES) printusage
 	@echo ======== hlrad : compiling $< ========
 	$(MAKE_DIR) $(dir $@)
-	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $<
+	$(CXX) -c $(COMMON_FLAGS) $(PLATFORM_CFLAGS) -o $@ $(addprefix -I,$(HLRAD_INCLUDEDIRS)) $(addprefix -D,$(HLRAD_DEFINITIONS)) $<
 
-bin/ripent : $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o) printusage
+bin/$(RIPENT_EXE) : $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o) printusage
 	@echo ======== ripent : linking ========
 	$(MAKE_DIR) ripent/release/bin
-	$(CXX) $(COMMON_FLAGS) -o ripent/release/bin/ripent $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o)
+	$(CXX) $(COMMON_FLAGS) $(PLATFORM_LFLAGS) -o ripent/release/bin/ripent $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o)
 	$(MAKE_DIR) bin
-	$(COPY_FILE) ripent/release/bin/ripent bin/ripent
+	$(COPY_FILE) ripent/release/bin/ripent bin/$(RIPENT_EXE)
 
 $(RIPENT_CPPFILES:%.cpp=ripent/release/%.o) : ripent/release/%.o : %.cpp $(RIPENT_INCLUDEFILES) printusage
 	@echo ======== ripent : compiling $< ========
 	$(MAKE_DIR) $(dir $@)
-	$(CXX) -c $(COMMON_FLAGS) -o $@ $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $<
+	$(CXX) -c $(COMMON_FLAGS) $(PLATFORM_CFLAGS) -o $@ $(addprefix -I,$(RIPENT_INCLUDEDIRS)) $(addprefix -D,$(RIPENT_DEFINITIONS)) $<
 
 .PHONY : printusage
 printusage :
-	$(PRINT_HEAD) -n 35 Makefile
+	@$(PRINT_HEAD) Makefile
+
+.PHONY : universal
+universal :
+	@echo ======== compiling arm64 tools ========
+	$(MAKE) TARGET=applesilicon
+	@echo ======== compiling x64 tools ========
+	$(MAKE) TARGET=intelmac
+	@echo ======== creating universal binaries ========
+	$(CREATE_UNIVERSAL) -output bin/hlcsg bin/hlcsg_x64 bin/hlcsg_arm64
+	$(CREATE_UNIVERSAL) -output bin/hlbsp bin/hlbsp_x64 bin/hlbsp_arm64
+	$(CREATE_UNIVERSAL) -output bin/hlvis bin/hlvis_x64 bin/hlvis_arm64
+	$(CREATE_UNIVERSAL) -output bin/hlrad bin/hlrad_x64 bin/hlrad_arm64
+	$(CREATE_UNIVERSAL) -output bin/ripent bin/ripent_x64 bin/ripent_arm64
+	@echo ======== OK ========
 
 #
 # Clean
