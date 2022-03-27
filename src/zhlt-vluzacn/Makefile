@@ -17,7 +17,7 @@
 #   linux_x64    (Build for Linux x64 on Linux hosts).
 #   linux_x86    (Build for Linux x86 on Linux hosts).
 #   applesilicon (Build for ARM64 Apple Silicon macOS 11 on macOS hosts).
-#   intelmac     (Build for x64 Intel macOS 11 on macOS hosts).
+#   intelmac     (Build for x64 Intel macOS 10.9 on macOS hosts).
 #
 # Before running the tools, please make sure the default maximum stack size on your computer
 #   is more than 4MB.
@@ -273,8 +273,8 @@ else ifeq ($(TARGET),applesilicon)
 	HLRAD_EXE  := $(addsuffix _arm64,$(HLRAD_EXE))
 	RIPENT_EXE := $(addsuffix _arm64,$(RIPENT_EXE))
 else ifeq ($(TARGET),intelmac)
-	PLATFORM_CFLAGS += -target x86_64-apple-macos11
-	PLATFORM_LFLAGS += -target x86_64-apple-macos11
+	PLATFORM_CFLAGS += -target x86_64-apple-macos10.9
+	PLATFORM_LFLAGS += -target x86_64-apple-macos10.9
 	HLBSP_EXE  := $(addsuffix _x64,$(HLBSP_EXE))
 	HLCSG_EXE  := $(addsuffix _x64,$(HLCSG_EXE))
 	HLVIS_EXE  := $(addsuffix _x64,$(HLVIS_EXE))
