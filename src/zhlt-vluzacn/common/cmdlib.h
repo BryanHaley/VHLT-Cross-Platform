@@ -348,7 +348,9 @@
 #define HLRAD_MATH_VL //--vluzacn
 	#ifdef HLRAD_NOSWAP
 	#ifdef HLRAD_TRANSWEIRDFIX
+#ifndef __APPLE__
 #define HLRAD_TRANSFERDATA_COMPRESS //--vluzacn
+#endif
 	#endif
 	#endif
 #define HLRAD_TRANCPARENCYLOSS_FIX //--vluzacn

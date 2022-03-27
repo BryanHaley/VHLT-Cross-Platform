@@ -176,10 +176,17 @@ inline unsigned int rotr(unsigned value, unsigned int amt)
 
 inline bool    isPointFinite(const vec_t* p)
 {
+#ifndef __APPLE__
     if (finite(p[0]) && finite(p[1]) && finite(p[2]))
     {
         return true;
     }
+#else
+    if (isfinite(p[0]) && isfinite(p[1]) && isfinite(p[2]))
+    {
+        return true;
+    }
+#endif
     return false;
 }
 

@@ -17,6 +17,14 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Build
+src/zhlt-vluzacn/hlcsg/release
+src/zhlt-vluzacn/hlbsp/release
+src/zhlt-vluzacn/hlvis/release
+src/zhlt-vluzacn/hlrad/release
+src/zhlt-vluzacn/ripent/release
+src/zhlt-vluzacn/bin
+
 # =========================
 # Operating System Files
 # =========================

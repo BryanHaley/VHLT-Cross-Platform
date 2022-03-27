@@ -6,7 +6,11 @@
 #pragma once
 #endif
 
+#ifndef __APPLE__
 #include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
 
 /////////////////////////////
 #ifdef SYSTEM_WIN32
