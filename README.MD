@@ -60,5 +60,5 @@ Add these to your level editor of choice the same way you would on Windows.
 
 Vluzacn's ZHLT v34 (2015/8/17)
 This is Vluzacn's (email: vluzacn@163.com) 34th custom build of ZHLT 3.4 (http://zhlt.info/)
-More information are available at  https://web.archive.org/web/20160311125736/http://forums.svencoop.com/showthread.php/38059-archive-custom-zhlt-by-vluzacn
+More information are available at  https://web.archive.org/web/20160802231319/http://forums.svencoop.com/showthread.php/40983-Downloads-amp-Changelogs
 ```
